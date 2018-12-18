@@ -59,7 +59,7 @@ while true
     end
     frameRGB = im2double(readFrame(vidReader));
     frameRGB(other_mask) = startFrame(other_mask);
-    imshow(frameRGB);
+    %imshow(frameRGB);
      [imind,cm] = rgb2ind(frameRGB,256); 
       % Write to the GIF File 
       if bool == 1 
