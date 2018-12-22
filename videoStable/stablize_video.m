@@ -2,14 +2,19 @@
 
 function [] = stablize_video(in_filename, out_filename)
     hVideoSrc = vision.VideoFileReader(in_filename, 'ImageColorSpace', 'Intensity');
+    hVideoSrc_color = vision.VideoFileReader(in_filename, 'ImageColorSpace', 'RGB');
+
     out_video = VideoWriter(out_filename);
     open(out_video);
 
     % Reset the video source to the beginning of the file.
     reset(hVideoSrc);
+    reset(hVideoSrc_color);
 
     % Process all frames in the video
     movMean = step(hVideoSrc);
+    imgB_color = step(hVideoSrc_color);
+
     imgB = movMean;
     imgBp = imgB;
     Hcumulative = eye(3);
@@ -30,14 +35,18 @@ function [] = stablize_video(in_filename, out_filename)
         imgA = imgB; % z^-1
         pointsA = pointsB;
         imgB = step(hVideoSrc);
+        imgB_color = step(hVideoSrc_color);
         [points,validity] = tracker(imgB);
         pointsB = points;
 
         % Estimate transform from frame A to frame B, and fit as an s-R-t
         H = cvexEstStabilizationTform(imgA,imgB, pointsA, pointsB);
         Hcumulative = H * Hcumulative;
-        imgBp = imwarp(imgB,projective2d(Hcumulative),'OutputView',imref2d(size(imgB)));
-
+        imgBp_r = imwarp(imgB_color(:,:,1),projective2d(Hcumulative),'OutputView',imref2d(size(imgB)));
+        imgBp_g = imwarp(imgB_color(:,:,2),projective2d(Hcumulative),'OutputView',imref2d(size(imgB)));
+        imgBp_b = imwarp(imgB_color(:,:,3),projective2d(Hcumulative),'OutputView',imref2d(size(imgB)));
+        imgBp = cat(3, imgBp_r, imgBp_g, imgBp_b);
+        
         writeVideo(out_video,imgBp);
     end
     

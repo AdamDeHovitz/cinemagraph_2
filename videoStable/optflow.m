@@ -1,4 +1,4 @@
-vidReader = VideoReader('vid2.m4v');
+vidReader = VideoReader('vid2_stable_matlab_full.avi');
 
 opticFlow = opticalFlowLK('NoiseThreshold',0.009);
 

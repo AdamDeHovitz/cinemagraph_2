@@ -1,0 +1,51 @@
+function [ frames ] = interpolate_frames_SIFT(num_frames, img1, img2)
+    frames = cell(num_frames);
+    addpath(genpath('release'));
+    downsize = true;
+    
+    num_channels = size(img1,3);
+    
+    % downsize images
+    if (downsize)
+        im1=imresize(imfilter(img1,fspecial('gaussian',7,1.),'same','replicate'),0.5,'bicubic');
+        im2=imresize(imfilter(img2,fspecial('gaussian',7,1.),'same','replicate'),0.5,'bicubic');
+        im1_gray=rgb2gray(im2double(im1));
+        im2_gray=rgb2gray(im2double(im2));
+    else
+        im1_gray=rgb2gray(im2double(img1));
+        im2_gray=rgb2gray(im2double(img2));
+    end
+
+
+    % 1) calculate flow
+    [Vx, Vy, Im1, Im2] = getSIFT(im1_gray, im2_gray);    
+    [Vx_r, Vy_r, Im1_r, Im2_r, patchsize] = getSIFT(im2_gray, im1_gray);    
+    Im1=im1(patchsize/2:end-patchsize/2+1,patchsize/2:end-patchsize/2+1,:);
+    Im2=im2(patchsize/2:end-patchsize/2+1,patchsize/2:end-patchsize/2+1,:);
+    
+    % 2) scale by dividing by # of frames + 1
+    vx = Vx ./ (num_frames + 1);
+    vy = Vy ./ (num_frames + 1);
+    
+    % setup for warping
+    [x, y] = meshgrid(1:size(img2,2), 1:size(img2,1));
+    
+    [x_dim, y_dim, num_frames] = size(Im1);
+    D = zeros(x_dim,y_dim,num_frames);
+    % 3) loop by incrementing scaled 
+    for i=1:num_frames
+        for i=1:num_channels
+            %[x, y] = meshgrid(1:size(img2,2), 1:size(img2,1));
+            cur_Im1 = Im1(:,:,i);
+            cur_Im2 = Im2(:,:,i);
+
+            cur_vx = vx .* i;
+            cur_vy = vy .* i;
+            cur_base = warpImage(cur_Im1, cur_Im2, vx .* (num_frames + 1 - i), vy .* (num_frames + 1 - i));
+            D = warpImage(cur_Im2, cur_base, cur_vx, cur_vy);
+            %D = interp2(double(img2), x-cur_vx, y-cur_vy);
+            %D = imfuse(D, cur_base, 'blend');
+            imshow(D);
+            frames{i} = D;
+        end
+    end        

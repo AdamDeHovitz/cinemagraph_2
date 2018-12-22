@@ -1,10 +1,18 @@
 function [ frames ] = interpolate_frames_OF(num_frames, img1, img2)
-    frames = cell(num_frames);
+    [rows, cols, num_channels] = size(img1);
+    frames = cell(num_frames, 1);
     
-    % 1) calculate flow
     opticFlow = opticalFlowLK();
-    flow = estimateFlow(opticFlow,img1); 
-    flow = estimateFlow(opticFlow,img2);
+
+    % 1) calculate flow
+    if num_channels > 1
+        flow = estimateFlow(opticFlow,rgb2gray(img1)); 
+        flow = estimateFlow(opticFlow,rgb2gray(img2));
+    else
+        flow = estimateFlow(opticFlow,img1); 
+        flow = estimateFlow(opticFlow,img2);
+    end
+
     
     % (optional) visualize flow
     imshow(img2) 
@@ -24,7 +32,11 @@ function [ frames ] = interpolate_frames_OF(num_frames, img1, img2)
         [x, y] = meshgrid(1:size(img2,2), 1:size(img2,1));
         cur_vx = vx .* i;
         cur_vy = vy .* i;
-        D = interp2(double(img2), x-cur_vx, y-cur_vy);
+        
+        D = zeros(rows,cols,num_channels);
+        for j=1:num_channels
+            D(:,:,j) = interp2(double(img2(:,:,j)), x-cur_vx, y-cur_vy);
+        end
         imshow(D);
         frames{i} = D;
     end        

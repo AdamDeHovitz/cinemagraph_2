@@ -5,8 +5,8 @@
 
 % Step 1. Load and downsample the images
 
-im1=imread('IMG_0730.jpeg');
-im2=imread('IMG_0731.jpeg');
+im1=rgb2gray(imread('IMG_0730.jpeg'));
+im2=rgb2gray(imread('IMG_0731.jpeg'));
 
 im1=imresize(imfilter(im1,fspecial('gaussian',7,1.),'same','replicate'),0.5,'bicubic');
 im2=imresize(imfilter(im2,fspecial('gaussian',7,1.),'same','replicate'),0.5,'bicubic');
@@ -46,8 +46,8 @@ tic;[vx,vy,energylist]=SIFTflowc2f(Sift1,Sift2,SIFTflowpara);toc
 % Step 4.  Visualize the matching results
 Im1=im1(patchsize/2:end-patchsize/2+1,patchsize/2:end-patchsize/2+1,:);
 Im2=im2(patchsize/2:end-patchsize/2+1,patchsize/2:end-patchsize/2+1,:);
-warpI2=warpImage(Im2,vx,vy);
-warpI2_half=warpImage(Im2,vx./2,vy./2);
+warpI2=warpImage(Im2,Im1,vx,vy);
+warpI2_half=warpImage(Im2,Im1,vx./2,vy./2);
 
 figure;imshow(Im1);title('Image 1');
 figure;imshow(warpI2);title('Warped image 2');

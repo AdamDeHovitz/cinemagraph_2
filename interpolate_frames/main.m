@@ -1,5 +1,8 @@
-img1 = rgb2gray(im2double(imread('release/Mars-1.jpg')));
-img2 = rgb2gray(im2double(imread('release/Mars-2.jpg')));
+img1 = rgb2gray(im2double(imread('../start.jpeg')));
+img2 = rgb2gray(im2double(imread('../end.jpeg')));
+
+%img1=imread('IMG_0730.jpeg');
+%img2=imread('IMG_0731.jpeg');
 
 %{
 img1 = zeros(400,400);
@@ -8,7 +11,8 @@ img1(50:100,50:100) = 1;
 img2(70:120,70:120) = 1;
 %}
 
-interpolate_frames_OF(4,img1,img2);
+imshow(img1)
+frames = interpolate_frames_OF(4,img1,img2);
 
 %{
 opticFlow = opticalFlowLK();

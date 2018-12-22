@@ -1,5 +1,5 @@
 % function to warp images with different dimensions
-function [warpI2,mask]=warpImage(im,vx,vy)
+function [warpI2,mask]=warpImage(im,base_im,vx,vy)
 
 [height2,width2,nchannels]=size(im);
 [height1,width1]=size(vx);
@@ -14,8 +14,9 @@ YY=min(max(YY,1),height2);
 
 for i=1:nchannels
     foo=interp2(xx,yy,im(:,:,i),XX,YY,'bicubic');
-    foo(mask)=0.6;
+    foo(mask) = 0;
     warpI2(:,:,i)=foo;
 end
 
+warpI2 = warpI2 + base_im .* mask;
 mask=1-mask;
